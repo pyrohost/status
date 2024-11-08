@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
-import { Activity } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import TimeScaleSelector from "@/components/TimeScaleSelector";
 import { TimeScaleProvider } from "@/components/TimeScaleContext";
