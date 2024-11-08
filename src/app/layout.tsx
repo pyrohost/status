@@ -1,21 +1,20 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
+import { IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { Activity } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import TimeScaleSelector from "@/components/TimeScaleSelector";
 import { TimeScaleProvider } from "@/components/TimeScaleContext";
-
-const plusJakartaSans = localFont({
-  src: "./fonts/PlusJakartaSans-VariableFont_wght.ttf",
-  variable: "--font-plus-jakarta-sans",
-  weight: "100 900",
-});
+import Logo from "@/components/Logo";
 
 export const metadata: Metadata = {
   title: "Pyro Status Dashboard",
   description: "Real-time monitoring of Pyro's infrastructure.",
 };
+
+const ibmPlexMono = IBM_Plex_Mono({
+  weight: ["400", "700"],
+});
 
 export default function RootLayout({
   children,
@@ -23,19 +22,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="bg-gray-900 text-white">
+    <html lang="en" className="bg-black text-white w-full h-full">
       <body
-        className={`${plusJakartaSans.variable} antialiased bg-black text-white`}
+        className={`${ibmPlexMono.className} antialiased w-full h-full bg-black text-white`}
       >
         <TimeScaleProvider>
-          <header className="sticky top-0 z-10 backdrop-blur-xl border-b border-white/10 bg-black/50">
-            <div className="container mx-auto px-4 py-4">
-              <div className="flex items-center justify-between">
+          <header className="sticky top-0 z-10 backdrop-blur-xl bg-black/50">
+            <div className="flex w-full max-w-[84rem] mx-auto px-4 md:py-8">
+              <div className="flex w-full items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <Activity className="h-6 w-6 text-white animate-pulse" />
-                  <h1 className="text-2xl font-bold tracking-tight">
-                    Pyro Status
-                  </h1>
+                  <Logo />
                 </div>
                 <div className="flex items-center space-x-3">
                   <TimeScaleSelector />

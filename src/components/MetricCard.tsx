@@ -62,7 +62,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
         <span>{title}</span>
       </h3>
       <p className="text-3xl font-bold mt-1 text-white">{formatValue(value)}</p>
-      <div className="h-[100px] mt-4">
+      <div className="h-[100px] text-xs mt-4">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>
             <CartesianGrid
@@ -74,7 +74,18 @@ const MetricCard: React.FC<MetricCardProps> = ({
               tickFormatter={(time) => new Date(time).toLocaleTimeString()}
               stroke="rgba(255,255,255,0.3)"
             />
-            <YAxis stroke="rgba(255,255,255,0.3)" />
+            <YAxis
+              stroke="rgba(255,255,255,0.3)"
+              tickFormatter={(value) =>
+                format === "percent"
+                  ? `${value}%`
+                  : format === "bytes"
+                  ? formatBytes(value)
+                  : value.toFixed(2)
+              }
+              domain={format === "percent" ? [0, 100] : [0, "auto"]}
+              width={format === "percent" ? 30 : format === "bytes" ? 80 : 40}
+            />
             <RechartsTooltip content={<CustomTooltip format={format} />} />
             <Line
               type="monotone"

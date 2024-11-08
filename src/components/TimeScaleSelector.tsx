@@ -28,7 +28,7 @@ const TimeScaleSelector: React.FC = () => {
     <select
       value={timeScale}
       onChange={handleTimeScaleChange}
-      className={`bg-black text-white border border-gray-700 p-1 ${
+      className={`bg-black !h-6 text-xs text-white border border-neutral-700 p-1 ${
         isTimeScaleLoading ? "opacity-50" : ""
       }`}
       disabled={isTimeScaleLoading}

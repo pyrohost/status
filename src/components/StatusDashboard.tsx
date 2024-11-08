@@ -38,7 +38,8 @@ export const timeScales = {
 };
 
 export default function StatusDashboard() {
-  const { timeScale, setIsTimeScaleLoading, isTimeScaleLoading } = useTimeScale();
+  const { timeScale, setIsTimeScaleLoading, isTimeScaleLoading } =
+    useTimeScale();
   const [metrics, setMetrics] = useState<Record<string, Metrics>>({});
   const [basicMetrics, setBasicMetrics] = useState<
     Record<string, Pick<Metrics, "cpu" | "memory" | "disk">>
@@ -46,7 +47,7 @@ export default function StatusDashboard() {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [expandedNodes, setExpandedNodes] = useState<string[]>([]);
   const [clusterMetrics, setClusterMetrics] = useState<ClusterAverages | null>(
-    null,
+    null
   );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -84,7 +85,7 @@ export default function StatusDashboard() {
             const instance = node.labels.instance;
             const basic = await fetchBasicMetrics(instance, newTimeScale);
             basicNodeMetrics[instance] = basic;
-          }),
+          })
         );
 
         setBasicMetrics(basicNodeMetrics);
@@ -94,7 +95,7 @@ export default function StatusDashboard() {
         setIsTimeScaleLoading(false);
       }
     },
-    [nodes, metricsCache, setIsTimeScaleLoading],
+    [nodes, metricsCache, setIsTimeScaleLoading]
   );
 
   // Listen for time scale changes
@@ -103,9 +104,15 @@ export default function StatusDashboard() {
       debouncedTimeScaleChange(event.detail);
     };
 
-    window.addEventListener('timeScaleChange', handleTimeScaleChange as EventListener);
+    window.addEventListener(
+      "timeScaleChange",
+      handleTimeScaleChange as EventListener
+    );
     return () => {
-      window.removeEventListener('timeScaleChange', handleTimeScaleChange as EventListener);
+      window.removeEventListener(
+        "timeScaleChange",
+        handleTimeScaleChange as EventListener
+      );
     };
   }, [debouncedTimeScaleChange]);
 
@@ -118,7 +125,7 @@ export default function StatusDashboard() {
       while (retryCount < maxRetries) {
         try {
           const response = await fetch(
-            "https://metrics.pyro.host/api/v1/targets",
+            "https://metrics.pyro.host/api/v1/targets"
           );
 
           if (!response.ok) {
@@ -132,7 +139,7 @@ export default function StatusDashboard() {
           }
 
           const activeTargets = data.data.activeTargets.filter(
-            (target: Node) => target.labels.job === "node",
+            (target: Node) => target.labels.job === "node"
           );
 
           if (activeTargets.length === 0) {
@@ -152,11 +159,11 @@ export default function StatusDashboard() {
               } catch (err) {
                 console.error(
                   `Error fetching details for node ${node.labels.instance}:`,
-                  err,
+                  err
                 );
                 return node;
               }
-            }),
+            })
           );
 
           setNodes(nodesWithDetails);
@@ -171,13 +178,13 @@ export default function StatusDashboard() {
             const errorMessage =
               err instanceof Error ? err.message : "Unknown error";
             setError(
-              `Failed to fetch node targets after ${maxRetries} attempts: ${errorMessage}`,
+              `Failed to fetch node targets after ${maxRetries} attempts: ${errorMessage}`
             );
             setNodes([]);
             setLoading(false);
           } else {
             await new Promise((resolve) =>
-              setTimeout(resolve, Math.pow(2, retryCount) * 1000),
+              setTimeout(resolve, Math.pow(2, retryCount) * 1000)
             );
           }
         }
@@ -221,7 +228,7 @@ export default function StatusDashboard() {
             const instance = node.labels.instance;
             const basic = await fetchBasicMetrics(instance, timeScale);
             basicNodeMetrics[instance] = basic;
-          }),
+          })
         );
         setBasicMetrics(basicNodeMetrics);
       } catch (err) {
@@ -242,7 +249,7 @@ export default function StatusDashboard() {
           expandedNodes.map(async (instance) => {
             const nodeMetrics = await fetchNodeMetrics(instance, timeScale);
             return { instance, nodeMetrics };
-          }),
+          })
         );
         setMetrics((prev) => {
           const newMetrics = { ...prev };
@@ -307,15 +314,17 @@ export default function StatusDashboard() {
 
   return (
     <div className="min-h-screen bg-black text-white antialiased">
-      <main className="container mx-auto p-4 space-y-6">
-        <div className="flex justify-between items-center mb-4">
+      <main className="max-w-[84rem] w-full mx-auto px-4 pb-8">
+        <div className="flex justify-between items-center">
           <div className="flex items-center space-x-2">
             {isTimeScaleLoading && (
-              <span className="text-sm text-gray-400">Updating metrics...</span>
+              <span className="text-sm text-neutral-400 mb-4">
+                Updating metrics...
+              </span>
             )}
           </div>
         </div>
-        <Card className="bg-black/50 border-white/10 backdrop-blur-sm">
+        <Card className="bg-white/5 border-white/10 backdrop-blur-sm mb-6">
           <CardHeader>
             <CardTitle className="text-xl text-white font-semibold">
               <div className="flex items-center space-x-2">
@@ -324,7 +333,7 @@ export default function StatusDashboard() {
               </div>
             </CardTitle>
 
-            <section className="text-sm text-gray-400">
+            <section className="text-sm text-neutral-400">
               <p>Real-time monitoring of the cluster&apos;s performance.</p>
               <p>Metrics are updated every 15 seconds.</p>
             </section>
@@ -394,7 +403,7 @@ export default function StatusDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="bg-black/50 border-white/10 backdrop-blur-sm">
+        <Card className="bg-white/5 border-white/10 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-xl text-white font-semibold">
               <div className="flex items-center space-x-2">
@@ -403,7 +412,7 @@ export default function StatusDashboard() {
               </div>
             </CardTitle>
 
-            <section className="text-sm text-gray-400">
+            <section className="text-sm text-neutral-400">
               <p>Performance and health metrics for individual nodes.</p>
               <p>
                 Basic metrics are updated every 15 seconds. Detailed metrics are

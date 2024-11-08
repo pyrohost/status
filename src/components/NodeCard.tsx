@@ -52,6 +52,10 @@ const NodeCard: React.FC<NodeCardProps> = ({
     }
   }, [metrics, isTransitioning]);
 
+  if (!node.labels.nodename || /[.:]/.test(node.labels.nodename)) {
+    return null;
+  }
+
   if (loading) {
     return (
       <Card className="bg-black/50 border-white/10">
@@ -139,9 +143,9 @@ const NodeCard: React.FC<NodeCardProps> = ({
                         <span>Load Average:</span>
                         <span className="font-medium">
                           {metrics && "loadAverage" in metrics
-                            ? (metrics.loadAverage
+                            ? metrics.loadAverage
                                 ?.slice(-1)[0]
-                                ?.value.toFixed(2) ?? "N/A")
+                                ?.value.toFixed(2) ?? "N/A"
                             : "N/A"}
                         </span>
                       </p>
@@ -152,27 +156,33 @@ const NodeCard: React.FC<NodeCardProps> = ({
                       Current Usage
                     </h2>
                     <div className="space-y-1.5 text-sm text-white/60">
-                      <p className="flex justify-between">
-                        <CpuIcon className="h-4 w-4 text-white/60 mr-2" />
-                        <span>CPU:</span>
+                      <div className="flex justify-between">
+                        <div className="flex flex-row items-center">
+                          <CpuIcon className="h-4 w-4 text-white/60 mr-2" />
+                          <span>CPU:</span>
+                        </div>
                         <span className="font-medium">
                           {metrics?.cpu.slice(-1)[0]?.value.toFixed(2)}%
                         </span>
-                      </p>
-                      <p className="flex justify-between">
-                        <MemoryStick className="h-4 w-4 text-white/60 mr-2" />
-                        <span>Memory:</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <div className="flex flex-row items-center">
+                          <MemoryStick className="h-4 w-4 text-white/60 mr-2" />
+                          <span>Memory:</span>
+                        </div>
                         <span className="font-medium">
                           {metrics?.memory.slice(-1)[0]?.value.toFixed(2)}%
                         </span>
-                      </p>
-                      <p className="flex justify-between">
-                        <HardDriveIcon className="h-4 w-4 text-white/60 mr-2" />
-                        <span>Disk:</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <div className="flex flex-row items-center">
+                          <HardDriveIcon className="h-4 w-4 text-white/60 mr-2" />
+                          <span>Disk:</span>
+                        </div>
                         <span className="font-medium">
                           {metrics?.disk.slice(-1)[0]?.value.toFixed(2)}%
                         </span>
-                      </p>
+                      </div>
                     </div>
                   </div>
                 </div>

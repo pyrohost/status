@@ -19,8 +19,8 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
     format === "bytes"
       ? formatBytes(value || 0)
       : format === "number"
-        ? value?.toFixed(2)
-        : `${value?.toFixed(2)}%`;
+      ? value?.toFixed(2)
+      : `${value?.toFixed(2)}%`;
 
   return (
     <div className="bg-black border border-white/10 p-3 shadow-lg">
@@ -29,7 +29,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
       </p>
       <p className="text-white font-medium text-base">
         {value !== undefined ? formattedValue : "N/A"}
-        {format === "percent" && "%"}
+        {/* {format === "percent" && "%"} */}
       </p>
     </div>
   );
