@@ -18,11 +18,13 @@ import {
 import MetricChart from "./MetricChart";
 import CPUCoreGrid from "./CPUCoreGrid";
 import { Node, Metrics } from "@/lib/types";
-import { formatBytes } from "@/lib/utils";
+import { formatBytes, formatUptime } from "@/lib/utils";
 
 interface NodeCardProps {
   node: Node;
-  metrics?: Metrics | Pick<Metrics, "cpu" | "memory" | "disk">;
+  metrics?:
+    | Metrics
+    | (Pick<Metrics, "cpu" | "memory" | "disk"> & { uptime?: number });
   isExpanded: boolean;
   onToggle: () => void;
   loading: boolean;
@@ -35,15 +37,25 @@ const NodeCard: React.FC<NodeCardProps> = ({
   onToggle,
   loading,
 }) => {
+  const contentRef = React.useRef<HTMLDivElement>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [showContent, setShowContent] = useState(false);
+
+  useEffect(() => {
+    if (isExpanded) {
+      setIsTransitioning(true);
+      // Wait for initial height animation before showing content
+      const timer = setTimeout(() => setShowContent(true), 50);
+      return () => clearTimeout(timer);
+    } else {
+      setShowContent(false);
+      setIsTransitioning(false);
+    }
+  }, [isExpanded]);
 
   const handleToggle = () => {
-    if (!isExpanded) {
-      setIsTransitioning(true);
-      onToggle();
-    } else {
-      onToggle();
-    }
+    setIsTransitioning(true);
+    onToggle();
   };
 
   useEffect(() => {
@@ -51,10 +63,6 @@ const NodeCard: React.FC<NodeCardProps> = ({
       setIsTransitioning(false);
     }
   }, [metrics, isTransitioning]);
-
-  if (!node.labels.nodename || /[.:]/.test(node.labels.nodename)) {
-    return null;
-  }
 
   if (loading) {
     return (
@@ -65,6 +73,11 @@ const NodeCard: React.FC<NodeCardProps> = ({
             <Skeleton className="h-4 w-24 bg-white/5" />
           </div>
         </CardHeader>
+        <CardContent>
+          <Skeleton className="h-[100px] w-full bg-white/5" />
+          <Skeleton className="h-[100px] w-full bg-white/5" />
+          <Skeleton className="h-[100px] w-full bg-white/5" />
+        </CardContent>
       </Card>
     );
   }
@@ -90,6 +103,12 @@ const NodeCard: React.FC<NodeCardProps> = ({
             <h3 className="text-lg text-white/80 font-semibold">
               {node.labels.nodename}
             </h3>
+            <p className="text-sm text-white/40">
+              Uptime:{" "}
+              {formatUptime(
+                isExpanded ? (metrics?.uptime ?? 0) : (node.uptime ?? 0),
+              )}
+            </p>
           </div>
         </div>
         <TooltipProvider>
@@ -110,141 +129,153 @@ const NodeCard: React.FC<NodeCardProps> = ({
         </TooltipProvider>
       </div>
 
-      {isExpanded && (
-        <CardContent className="border-t border-white/10 space-y-6 p-6">
-          {isTransitioning ? (
-            <div className="space-y-4">
-              <Skeleton className="h-[100px] w-full bg-white/5" />
-              <Skeleton className="h-[100px] w-full bg-white/5" />
-              <Skeleton className="h-[100px] w-full bg-white/5" />
-            </div>
-          ) : (
-            metrics && (
+      <div
+        style={{
+          maxHeight: isExpanded
+            ? contentRef.current?.scrollHeight || "2000px"
+            : 0,
+          opacity: showContent ? 1 : 0,
+          overflow: "hidden",
+          transition:
+            "max-height 300ms cubic-bezier(0.4, 0, 0.2, 1), opacity 200ms ease-in-out",
+        }}
+      >
+        <div ref={contentRef}>
+          <CardContent className="border-t border-white/10 space-y-6 p-6">
+            {!showContent || loading ? (
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div className="p-4 border border-white/10 bg-black/50">
-                    <h2 className="text-base font-semibold text-white/80 mb-2">
-                      System Info
-                    </h2>
-                    <div className="space-y-1.5 text-sm text-white/60">
-                      <p className="flex justify-between">
-                        <span>CPU Cores:</span>
-                        <span className="font-medium">
-                          {node.details?.cpuCores}
-                        </span>
-                      </p>
-                      <p className="flex justify-between">
-                        <span>Total Memory:</span>
-                        <span className="font-medium">
-                          {formatBytes(node.details?.totalMemory || 0)}
-                        </span>
-                      </p>
-                      <p className="flex justify-between">
-                        <span>Load Average:</span>
-                        <span className="font-medium">
-                          {metrics && "loadAverage" in metrics
-                            ? metrics.loadAverage
-                                ?.slice(-1)[0]
-                                ?.value.toFixed(2) ?? "N/A"
-                            : "N/A"}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-                  <div className="p-4 border border-white/10 bg-black/50">
-                    <h2 className="text-base font-semibold text-white/80 mb-2">
-                      Current Usage
-                    </h2>
-                    <div className="space-y-1.5 text-sm text-white/60">
-                      <div className="flex justify-between">
-                        <div className="flex flex-row items-center">
-                          <CpuIcon className="h-4 w-4 text-white/60 mr-2" />
-                          <span>CPU:</span>
-                        </div>
-                        <span className="font-medium">
-                          {metrics?.cpu.slice(-1)[0]?.value.toFixed(2)}%
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <div className="flex flex-row items-center">
-                          <MemoryStick className="h-4 w-4 text-white/60 mr-2" />
-                          <span>Memory:</span>
-                        </div>
-                        <span className="font-medium">
-                          {metrics?.memory.slice(-1)[0]?.value.toFixed(2)}%
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <div className="flex flex-row items-center">
-                          <HardDriveIcon className="h-4 w-4 text-white/60 mr-2" />
-                          <span>Disk:</span>
-                        </div>
-                        <span className="font-medium">
-                          {metrics?.disk.slice(-1)[0]?.value.toFixed(2)}%
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
+                <Skeleton className="h-[100px] w-full bg-white/5" />
+                <Skeleton className="h-[100px] w-full bg-white/5" />
+                <Skeleton className="h-[100px] w-full bg-white/5" />
+              </div>
+            ) : (
+              metrics && (
                 <div className="space-y-4">
-                  <MetricChart
-                    title="CPU Usage"
-                    data={metrics?.cpu}
-                    color="#8884d8"
-                  />
-                  <MetricChart
-                    title="Memory Usage Details"
-                    data={
-                      "memoryDetails" in metrics
-                        ? metrics.memoryDetails
-                        : undefined
-                    }
-                    type="memory"
-                  />
-                  {"cpuPerCore" in metrics && (
-                    <CPUCoreGrid cpuPerCore={metrics.cpuPerCore} />
-                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="p-4 border border-white/10 bg-black/50">
+                      <h2 className="text-base font-semibold text-white/80 mb-2">
+                        System Info
+                      </h2>
+                      <div className="space-y-1.5 text-sm text-white/60">
+                        <p className="flex justify-between">
+                          <span>CPU Cores:</span>
+                          <span className="font-medium">
+                            {node.details?.cpuCores}
+                          </span>
+                        </p>
+                        <p className="flex justify-between">
+                          <span>Total Memory:</span>
+                          <span className="font-medium">
+                            {formatBytes(node.details?.totalMemory || 0)}
+                          </span>
+                        </p>
+                        <p className="flex justify-between">
+                          <span>Load Average:</span>
+                          <span className="font-medium">
+                            {metrics && "loadAverage" in metrics
+                              ? (metrics.loadAverage
+                                  ?.slice(-1)[0]
+                                  ?.value.toFixed(2) ?? "N/A")
+                              : "N/A"}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-white/10 bg-black/50">
+                      <h2 className="text-base font-semibold text-white/80 mb-2">
+                        Current Usage
+                      </h2>
+                      <div className="space-y-1.5 text-sm text-white/60">
+                        <div className="flex justify-between">
+                          <div className="flex flex-row items-center">
+                            <CpuIcon className="h-4 w-4 text-white/60 mr-2" />
+                            <span>CPU:</span>
+                          </div>
+                          <span className="font-medium">
+                            {metrics?.cpu.slice(-1)[0]?.value.toFixed(2)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <div className="flex flex-row items-center">
+                            <MemoryStick className="h-4 w-4 text-white/60 mr-2" />
+                            <span>Memory:</span>
+                          </div>
+                          <span className="font-medium">
+                            {metrics?.memory.slice(-1)[0]?.value.toFixed(2)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <div className="flex flex-row items-center">
+                            <HardDriveIcon className="h-4 w-4 text-white/60 mr-2" />
+                            <span>Disk:</span>
+                          </div>
+                          <span className="font-medium">
+                            {metrics?.disk.slice(-1)[0]?.value.toFixed(2)}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-4">
                     <MetricChart
-                      title="Disk Usage"
-                      data={metrics?.disk}
-                      color="#ffc658"
+                      title="CPU Usage"
+                      data={metrics?.cpu}
+                      color="#8884d8"
                     />
                     <MetricChart
-                      title="Swap Usage"
+                      title="Memory Usage Details"
                       data={
-                        "swapDetails" in metrics
-                          ? metrics.swapDetails
+                        "memoryDetails" in metrics
+                          ? metrics.memoryDetails
                           : undefined
                       }
-                      type="swap"
+                      type="memory"
                     />
-                  </div>
+                    {"cpuPerCore" in metrics && (
+                      <CPUCoreGrid cpuPerCore={metrics.cpuPerCore} />
+                    )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <MetricChart
-                      title="Disk I/O"
-                      data={"diskIO" in metrics ? metrics.diskIO : []}
-                      color="#ff7300"
-                      format="bytes"
-                    />
-                    <MetricChart
-                      title="Network I/O"
-                      data={"netIO" in metrics ? metrics.netIO : []}
-                      color="#0088FE"
-                      format="bytes"
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <MetricChart
+                        title="Disk Usage"
+                        data={metrics?.disk}
+                        color="#ffc658"
+                      />
+                      <MetricChart
+                        title="Swap Usage"
+                        data={
+                          "swapDetails" in metrics
+                            ? metrics.swapDetails
+                            : undefined
+                        }
+                        type="swap"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <MetricChart
+                        title="Disk I/O"
+                        data={"diskIO" in metrics ? metrics.diskIO : []}
+                        color="#ff7300"
+                        format="bytes"
+                      />
+                      <MetricChart
+                        title="Network I/O"
+                        data={"netIO" in metrics ? metrics.netIO : []}
+                        color="#0088FE"
+                        format="bytes"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            )
-          )}
-        </CardContent>
-      )}
+              )
+            )}
+          </CardContent>
+        </div>
+      </div>
     </Card>
   );
 };
 
-export default NodeCard;
+export default React.memo(NodeCard);

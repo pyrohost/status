@@ -18,13 +18,13 @@ const ibmPlexMono = IBM_Plex_Mono({
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en" className="bg-black text-white w-full h-full">
+    <html lang="en">
       <body
-        className={`${ibmPlexMono.className} antialiased w-full h-full bg-black text-white flex flex-col`}
+        className={`${ibmPlexMono.className} antialiased w-full h-full bg-black text-white flex flex-col selection:bg-white selection:text-black`}
       >
         <TimeScaleProvider>
           <header className="sticky top-0 z-10 backdrop-blur-xl bg-black/50">

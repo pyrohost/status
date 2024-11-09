@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useMemo } from "react";
 import { timeScales } from "@/components/StatusDashboard";
 
 interface TimeScaleContextType {
@@ -11,16 +10,26 @@ interface TimeScaleContextType {
   setIsTimeScaleLoading: (loading: boolean) => void;
 }
 
-const TimeScaleContext = createContext<TimeScaleContextType | undefined>(undefined);
+const TimeScaleContext = createContext<TimeScaleContextType | undefined>(
+  undefined,
+);
 
 export function TimeScaleProvider({ children }: { children: React.ReactNode }) {
   const [timeScale, setTimeScale] = useState(timeScales["1h"]);
   const [isTimeScaleLoading, setIsTimeScaleLoading] = useState(false);
 
+  const contextValue = useMemo(
+    () => ({
+      timeScale,
+      setTimeScale,
+      isTimeScaleLoading,
+      setIsTimeScaleLoading,
+    }),
+    [timeScale, isTimeScaleLoading],
+  );
+
   return (
-    <TimeScaleContext.Provider
-      value={{ timeScale, setTimeScale, isTimeScaleLoading, setIsTimeScaleLoading }}
-    >
+    <TimeScaleContext.Provider value={contextValue}>
       {children}
     </TimeScaleContext.Provider>
   );

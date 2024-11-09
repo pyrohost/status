@@ -19,16 +19,49 @@ export interface SwapDetails {
   used: Metric[];
 }
 
+export interface NodeDetails {
+  details: {
+    cpuCores: number;
+    totalMemory: number;
+  };
+  nodename: string;
+}
+
+export interface NodeDetailsMap {
+  [instance: string]: NodeDetails;
+}
+
 export interface Node {
+  scrapePool: string;
+  scrapeUrl: string;
+  globalUrl: string;
+  health: string;
   labels: {
     instance: string;
     job: string;
     nodename: string;
   };
+  lastError: string;
+  lastScrape: string;
+  lastScrapeDuration: number;
+  uptime?: number;
+  lastUptimeFetch?: number;
   details?: {
-    cpuModel: string;
     cpuCores: number;
     totalMemory: number;
+  };
+}
+
+export interface MergedNode extends Node {
+  details: {
+    cpuCores: number;
+    totalMemory: number;
+  };
+  labels: {
+    instance: string;
+    job: string;
+    nodename: string;
+    displayName: string;
   };
 }
 
@@ -43,6 +76,13 @@ export interface Metrics {
   swapDetails?: SwapDetails;
   loadAverage?: Metric[];
   cpuPerCore?: { [core: string]: Metric[] };
+  [key: string]:
+    | Metric[]
+    | number
+    | MemoryDetails
+    | SwapDetails
+    | { [core: string]: Metric[] }
+    | undefined;
 }
 
 export interface ClusterAverages {
@@ -52,11 +92,12 @@ export interface ClusterAverages {
   diskIO: Metric[];
   netIO: Metric[];
   loadAverage: Metric[];
+  [key: string]: Metric[];
 }
 
-export interface MetricCardData {
+export interface MetricCardData extends Metric {
+  value: number;
   timestamp: Date;
-  [key: string]: number | Date;
 }
 
 export interface PrometheusResponse {

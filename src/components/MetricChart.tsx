@@ -251,4 +251,4 @@ const MetricChart: React.FC<MetricChartProps> = ({
   );
 };
 
-export default MetricChart;
+export default React.memo(MetricChart);

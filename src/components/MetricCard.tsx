@@ -80,8 +80,8 @@ const MetricCard: React.FC<MetricCardProps> = ({
                 format === "percent"
                   ? `${value}%`
                   : format === "bytes"
-                  ? formatBytes(value)
-                  : value.toFixed(2)
+                    ? formatBytes(value)
+                    : value.toFixed(2)
               }
               domain={format === "percent" ? [0, 100] : [0, "auto"]}
               width={format === "percent" ? 30 : format === "bytes" ? 80 : 40}
@@ -102,4 +102,4 @@ const MetricCard: React.FC<MetricCardProps> = ({
   );
 };
 
-export default MetricCard;
+export default React.memo(MetricCard);

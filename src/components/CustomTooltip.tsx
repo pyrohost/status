@@ -19,8 +19,8 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
     format === "bytes"
       ? formatBytes(value || 0)
       : format === "number"
-      ? value?.toFixed(2)
-      : `${value?.toFixed(2)}%`;
+        ? value?.toFixed(2)
+        : `${value?.toFixed(2)}%`;
 
   return (
     <div className="bg-black border border-white/10 p-3 shadow-lg">

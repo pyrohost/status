@@ -23,18 +23,24 @@ export const formatBytes = (bytes: number): string => {
 
 const calculateStep = (timeScale: number): number => {
   // For ranges > 3 days, use larger steps to reduce data points
-  if (timeScale > 259200) return 900; // 15 min steps for > 3 days
-  if (timeScale > 86400) return 300; // 5 min steps for > 1 day
-  if (timeScale > 21600) return 180; // 3 min steps for > 6 hours
+  if (timeScale > 259200) return 1800; // 30 min steps for > 3 days
+  if (timeScale > 86400) return 600; // 10 min steps for > 1 day
+  if (timeScale > 21600) return 300; // 5 min steps for > 6 hours
   return 60; // 1 min steps for shorter ranges
 };
 
-export const fetchPrometheusData = async (
+const fetchPrometheusData = async (
   queries: string[],
   timeScale: number,
+  lastFetchTime?: number,
 ) => {
-  const endTime = Math.floor(Date.now() / 1000);
-  const startTime = endTime - timeScale;
+  const now = Date.now();
+  const endTime = Math.floor(now / 1000);
+  // Ensure startTime is always before endTime
+  const startTime = lastFetchTime
+    ? Math.min(lastFetchTime, endTime - 60) // Ensure at least 60s difference
+    : endTime - timeScale;
+
   const step = calculateStep(timeScale);
 
   const responses = await Promise.all(
@@ -83,6 +89,7 @@ const processMetricData = (response: PrometheusResponse): Metric[] => {
 export const fetchNodeMetrics = async (
   instance: string,
   timeScale: number,
+  lastFetchTime?: number,
 ): Promise<Metrics> => {
   try {
     const queries = {
@@ -104,6 +111,7 @@ export const fetchNodeMetrics = async (
     const queryRangeResponses = await fetchPrometheusData(
       Object.values(queries),
       timeScale,
+      lastFetchTime,
     );
     const [
       cpuResponse,
@@ -217,8 +225,29 @@ export const fetchNodeMetrics = async (
   }
 };
 
+export const fetchMultipleNodeMetrics = async (
+  instances: string[],
+  timeScale: number,
+  lastFetchTime?: number,
+): Promise<{ [instance: string]: Metrics }> => {
+  const results = await Promise.all(
+    instances.map(async (instance) => {
+      const metrics = await fetchNodeMetrics(
+        instance,
+        timeScale,
+        lastFetchTime,
+      );
+      return { instance, metrics };
+    }),
+  );
+  return Object.fromEntries(
+    results.map(({ instance, metrics }) => [instance, metrics]),
+  );
+};
+
 export const fetchClusterAverages = async (
   timeScale: number,
+  lastFetchTime?: number,
 ): Promise<ClusterAverages> => {
   const queries = {
     cpu: `avg(100 - (rate(node_cpu_seconds_total{mode="idle"}[5m]) * 100))`,
@@ -232,6 +261,7 @@ export const fetchClusterAverages = async (
   const responses = await fetchPrometheusData(
     Object.values(queries),
     timeScale,
+    lastFetchTime,
   );
 
   return {
@@ -320,4 +350,21 @@ export const fetchNodeName = async (instance: string) => {
   );
   const data = await response.json();
   return data.data.result[0]?.metric.nodename || instance;
+};
+
+export const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
+export const formatUptime = (seconds: number): string => {
+  if (!seconds) return "N/A";
+
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+
+  const parts = [];
+  if (days > 0) parts.push(`${days}d`);
+  if (hours > 0) parts.push(`${hours}h`);
+  if (minutes > 0) parts.push(`${minutes}m`);
+
+  return parts.length > 0 ? parts.join(" ") : "< 1m";
 };
