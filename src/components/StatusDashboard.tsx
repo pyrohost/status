@@ -36,18 +36,6 @@ import {
 const MetricCard = React.lazy(() => import("./MetricCard"));
 const NodeCard = React.lazy(() => import("./NodeCard"));
 
-export const timeScales = {
-  "30m": 1800,
-  "1h": 3600,
-  "3h": 10800,
-  "6h": 21600,
-  "12h": 43200,
-  "24h": 86400,
-  "3d": 259200,
-  "1w": 604800,
-  "1m": 2592000,
-};
-
 export default function StatusDashboard() {
   const { timeScale } = useTimeScale();
   const [expandedNodes, setExpandedNodes] = useState<string[]>([]);
@@ -225,7 +213,7 @@ export default function StatusDashboard() {
                       }
                     >
                       <MetricCard
-                        title="Average Load Average"
+                        title="Average Load"
                         value={
                           safeMetricsData.loadAverage.slice(-1)[0]?.value || 0
                         }

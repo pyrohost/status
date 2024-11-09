@@ -46,7 +46,7 @@ export default function RootLayout({
             </div>
           </header>
           <main className="flex-grow">{children}</main>
-          <footer className="border-t border-white/10 bg-black/50 py-4">
+          <footer className="border-t border-white/10 bg-black/50 py-8">
             <div className="container mx-auto px-4 text-center text-sm text-white/60">
               &copy; {new Date().getFullYear()} Pyro Host Inc. All rights
               reserved.

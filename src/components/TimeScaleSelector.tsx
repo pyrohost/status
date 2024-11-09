@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useTransition } from "react";
-import { timeScales } from "./StatusDashboard";
+import { timeScales } from "@/lib/utils";
 import { useTimeScale } from "@/components/TimeScaleContext";
 
 const TimeScaleSelector: React.FC = () => {
