@@ -24,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="bg-black text-white w-full h-full">
       <body
-        className={`${ibmPlexMono.className} antialiased w-full h-full bg-black text-white`}
+        className={`${ibmPlexMono.className} antialiased w-full h-full bg-black text-white flex flex-col`}
       >
         <TimeScaleProvider>
           <header className="sticky top-0 z-10 backdrop-blur-xl bg-black/50">
@@ -45,7 +45,7 @@ export default function RootLayout({
               </div>
             </div>
           </header>
-          {children}
+          <main className="flex-grow">{children}</main>
           <footer className="border-t border-white/10 bg-black/50 py-4">
             <div className="container mx-auto px-4 text-center text-sm text-white/60">
               &copy; {new Date().getFullYear()} Pyro Host Inc. All rights

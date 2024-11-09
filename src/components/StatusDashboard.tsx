@@ -303,12 +303,31 @@ export default function StatusDashboard() {
 
   if (error) {
     return (
-      <Alert
-        variant="destructive"
-        className="m-4 border-red-500/20 bg-red-950/10"
-      >
-        <AlertDescription>{error}</AlertDescription>
-      </Alert>
+      <div className="min-h-screen bg-black text-white antialiased">
+        <main className="max-w-[84rem] w-full mx-auto px-4 pb-8">
+          <Alert
+            variant="destructive"
+            className="m-4 border-red-500/20 bg-red-950/10"
+          >
+            <AlertDescription>
+              <div className="text-lg font-semibold">Error Fetching Metrics</div>
+              <p className="mt-2">
+                We encountered an error while trying to fetch the metrics. Please
+                try the following:
+              </p>
+              <ul className="list-disc list-inside mt-2">
+                <li>Check your internet connection.</li>
+                <li>Try refreshing the page.</li>
+                <li>
+                  The metrics server might be under maintenance. Please try again
+                  later.
+                </li>
+              </ul>
+              <p className="mt-2">Error Details: {error}</p>
+            </AlertDescription>
+          </Alert>
+        </main>
+      </div>
     );
   }
 
