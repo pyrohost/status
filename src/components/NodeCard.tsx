@@ -37,24 +37,6 @@ const NodeCard: React.FC<NodeCardProps> = ({
   onToggle,
   loading,
 }) => {
-  if (loading) {
-    return (
-      <Card className="bg-black/50 border-white/10">
-        <CardHeader>
-          <div className="flex items-center space-x-4">
-            <Skeleton className="h-8 w-32 bg-white/5" />
-            <Skeleton className="h-4 w-24 bg-white/5" />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-[100px] w-full bg-white/5" />
-          <Skeleton className="h-[100px] w-full bg-white/5" />
-          <Skeleton className="h-[100px] w-full bg-white/5" />
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card className="bg-black/50 border-white/10">
       <div
@@ -102,127 +84,139 @@ const NodeCard: React.FC<NodeCardProps> = ({
         </TooltipProvider>
       </div>
 
-      {isExpanded && metrics && (
+      {isExpanded && (
         <div className="border-t border-white/10">
-          <CardContent className="space-y-6 p-6">
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="p-4 border border-white/10 bg-black/50">
-                  <h2 className="text-base font-semibold text-white/80 mb-2">
-                    System Info
-                  </h2>
-                  <div className="space-y-1.5 text-sm text-white/60">
-                    <p className="flex justify-between">
-                      <span>CPU Cores:</span>
-                      <span className="font-medium">
-                        {node.details?.cpuCores}
-                      </span>
-                    </p>
-                    <p className="flex justify-between">
-                      <span>Total Memory:</span>
-                      <span className="font-medium">
-                        {formatBytes(node.details?.totalMemory || 0)}
-                      </span>
-                    </p>
-                    <p className="flex justify-between">
-                      <span>Load Average:</span>
-                      <span className="font-medium">
-                        {metrics && "loadAverage" in metrics
-                          ? metrics.loadAverage
-                              ?.slice(-1)[0]
-                              ?.value.toFixed(2) ?? "N/A"
-                          : "N/A"}
-                      </span>
-                    </p>
+          {loading ? (
+            <CardContent className="p-6">
+              <Skeleton className="h-[100px] w-full bg-white/5 mb-4" />
+              <Skeleton className="h-[100px] w-full bg-white/5 mb-4" />
+              <Skeleton className="h-[100px] w-full bg-white/5" />
+            </CardContent>
+          ) : (
+            metrics && (
+              <CardContent className="space-y-6 p-6">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="p-4 border border-white/10 bg-black/50">
+                      <h2 className="text-base font-semibold text-white/80 mb-2">
+                        System Info
+                      </h2>
+                      <div className="space-y-1.5 text-sm text-white/60">
+                        <p className="flex justify-between">
+                          <span>CPU Cores:</span>
+                          <span className="font-medium">
+                            {node.details?.cpuCores}
+                          </span>
+                        </p>
+                        <p className="flex justify-between">
+                          <span>Total Memory:</span>
+                          <span className="font-medium">
+                            {formatBytes(node.details?.totalMemory || 0)}
+                          </span>
+                        </p>
+                        <p className="flex justify-between">
+                          <span>Load Average:</span>
+                          <span className="font-medium">
+                            {metrics && "loadAverage" in metrics
+                              ? metrics.loadAverage
+                                  ?.slice(-1)[0]
+                                  ?.value.toFixed(2) ?? "N/A"
+                              : "N/A"}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                    <div className="p-4 border border-white/10 bg-black/50">
+                      <h2 className="text-base font-semibold text-white/80 mb-2">
+                        Current Usage
+                      </h2>
+                      <div className="space-y-1.5 text-sm text-white/60">
+                        <div className="flex justify-between">
+                          <div className="flex flex-row items-center">
+                            <CpuIcon className="h-4 w-4 text-white/60 mr-2" />
+                            <span>CPU:</span>
+                          </div>
+                          <span className="font-medium">
+                            {metrics.cpu.slice(-1)[0]?.value.toFixed(2)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <div className="flex flex-row items-center">
+                            <MemoryStick className="h-4 w-4 text-white/60 mr-2" />
+                            <span>Memory:</span>
+                          </div>
+                          <span className="font-medium">
+                            {metrics.memory.slice(-1)[0]?.value.toFixed(2)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <div className="flex flex-row items-center">
+                            <HardDriveIcon className="h-4 w-4 text-white/60 mr-2" />
+                            <span>Disk:</span>
+                          </div>
+                          <span className="font-medium">
+                            {metrics.disk.slice(-1)[0]?.value.toFixed(2)}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <MetricChart
+                      title="CPU Usage"
+                      data={metrics.cpu}
+                      color="#8884d8"
+                    />
+                    <MetricChart
+                      title="Memory Usage Details"
+                      data={
+                        "memoryDetails" in metrics
+                          ? metrics.memoryDetails
+                          : undefined
+                      }
+                      type="memory"
+                    />
+                    {"cpuPerCore" in metrics && (
+                      <CPUCoreGrid cpuPerCore={metrics.cpuPerCore} />
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <MetricChart
+                        title="Disk Usage"
+                        data={metrics.disk}
+                        color="#ffc658"
+                      />
+                      <MetricChart
+                        title="Swap Usage"
+                        data={
+                          "swapDetails" in metrics
+                            ? metrics.swapDetails
+                            : undefined
+                        }
+                        type="swap"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <MetricChart
+                        title="Disk I/O"
+                        data={"diskIO" in metrics ? metrics.diskIO : []}
+                        color="#ff7300"
+                        format="bytes"
+                      />
+                      <MetricChart
+                        title="Network I/O"
+                        data={"netIO" in metrics ? metrics.netIO : []}
+                        color="#0088FE"
+                        format="bytes"
+                      />
+                    </div>
                   </div>
                 </div>
-                <div className="p-4 border border-white/10 bg-black/50">
-                  <h2 className="text-base font-semibold text-white/80 mb-2">
-                    Current Usage
-                  </h2>
-                  <div className="space-y-1.5 text-sm text-white/60">
-                    <div className="flex justify-between">
-                      <div className="flex flex-row items-center">
-                        <CpuIcon className="h-4 w-4 text-white/60 mr-2" />
-                        <span>CPU:</span>
-                      </div>
-                      <span className="font-medium">
-                        {metrics?.cpu.slice(-1)[0]?.value.toFixed(2)}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <div className="flex flex-row items-center">
-                        <MemoryStick className="h-4 w-4 text-white/60 mr-2" />
-                        <span>Memory:</span>
-                      </div>
-                      <span className="font-medium">
-                        {metrics?.memory.slice(-1)[0]?.value.toFixed(2)}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <div className="flex flex-row items-center">
-                        <HardDriveIcon className="h-4 w-4 text-white/60 mr-2" />
-                        <span>Disk:</span>
-                      </div>
-                      <span className="font-medium">
-                        {metrics?.disk.slice(-1)[0]?.value.toFixed(2)}%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <MetricChart
-                  title="CPU Usage"
-                  data={metrics?.cpu}
-                  color="#8884d8"
-                />
-                <MetricChart
-                  title="Memory Usage Details"
-                  data={
-                    "memoryDetails" in metrics
-                      ? metrics.memoryDetails
-                      : undefined
-                  }
-                  type="memory"
-                />
-                {"cpuPerCore" in metrics && (
-                  <CPUCoreGrid cpuPerCore={metrics.cpuPerCore} />
-                )}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <MetricChart
-                    title="Disk Usage"
-                    data={metrics?.disk}
-                    color="#ffc658"
-                  />
-                  <MetricChart
-                    title="Swap Usage"
-                    data={
-                      "swapDetails" in metrics ? metrics.swapDetails : undefined
-                    }
-                    type="swap"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <MetricChart
-                    title="Disk I/O"
-                    data={"diskIO" in metrics ? metrics.diskIO : []}
-                    color="#ff7300"
-                    format="bytes"
-                  />
-                  <MetricChart
-                    title="Network I/O"
-                    data={"netIO" in metrics ? metrics.netIO : []}
-                    color="#0088FE"
-                    format="bytes"
-                  />
-                </div>
-              </div>
-            </div>
-          </CardContent>
+              </CardContent>
+            )
+          )}
         </div>
       )}
     </Card>
