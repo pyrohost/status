@@ -7,8 +7,9 @@ import { TimeScaleProvider } from "@/components/TimeScaleContext";
 import Logo from "@/components/Logo";
 
 export const metadata: Metadata = {
-  title: "Pyro Status Dashboard",
-  description: "Real-time monitoring of Pyro's infrastructure.",
+  title: "Pyro Nightwatch",
+  description:
+    "Nightwatch is a real-time monitoring dashboard of Pyro's infrastructure.",
 };
 
 const ibmPlexMono = IBM_Plex_Mono({
