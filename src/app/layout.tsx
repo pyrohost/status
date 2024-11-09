@@ -7,6 +7,7 @@ import { TimeScaleProvider } from "@/components/TimeScaleContext";
 import Logo from "@/components/Logo";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://status.pyro.host"),
   title: "Pyro Nightwatch",
   description:
     "Nightwatch is a real-time monitoring dashboard of Pyro's infrastructure.",
