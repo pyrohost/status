@@ -56,19 +56,19 @@ export default function StatusDashboard() {
   const { nodes: basicNodes = [], loading: nodesLoading } = useNodes();
   const { data: nodeDetails } = useNodeDetails(
     expandedNodes.join(","),
-    expandedNodes.length > 0
+    expandedNodes.length > 0,
   ) as { data: NodeDetailsMap | undefined };
   const { data: detailedMetricsData } = useNodeMetrics(
     expandedNodes,
     timeScale,
-    expandedNodes.length > 0
+    expandedNodes.length > 0,
   );
 
   useEffect(() => {
     setError(
       !basicNodes.length && !nodesLoading
         ? "No nodes found. Please check your connection."
-        : null
+        : null,
     );
   }, [basicNodes.length, nodesLoading]);
 
@@ -83,7 +83,7 @@ export default function StatusDashboard() {
         nodename: node.labels.nodename,
       };
     },
-    [nodeDetails]
+    [nodeDetails],
   );
 
   const handleNodeToggle = useCallback((instance: string) => {
@@ -109,7 +109,11 @@ export default function StatusDashboard() {
           node.labels.nodename || node.labels.instance.split(":")[0];
         return {
           ...node,
-          details: details ?? { cpuCores: 0, totalMemory: 0 },
+          details: {
+            cpuModel: details?.cpuModel ?? "Unknown",
+            cpuCores: details?.cpuCores ?? 0,
+            totalMemory: details?.totalMemory ?? 0,
+          },
           labels: {
             ...node.labels,
             nodename,
@@ -120,7 +124,7 @@ export default function StatusDashboard() {
         };
       })
       .sort((a, b) =>
-        (a.labels.nodename || "").localeCompare(b.labels.nodename || "")
+        (a.labels.nodename || "").localeCompare(b.labels.nodename || ""),
       );
   }, [basicNodes, getNodeDetails]);
 
@@ -299,7 +303,7 @@ export default function StatusDashboard() {
                             : undefined
                         }
                         isExpanded={expandedNodes.includes(
-                          node.labels.instance
+                          node.labels.instance,
                         )}
                         onToggle={() => handleNodeToggle(node.labels.instance)}
                         loading={

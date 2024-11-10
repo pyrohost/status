@@ -27,9 +27,7 @@ export const formatTimestamp = (timestamp: string) => {
   const diff = now.getTime() - date.getTime();
   const hours24 = 24 * 60 * 60 * 1000;
 
-  return diff > hours24
-    ? date.toLocaleDateString()
-    : date.toLocaleTimeString();
+  return diff > hours24 ? date.toLocaleDateString() : date.toLocaleTimeString();
 };
 
 export function cn(...inputs: ClassValue[]) {
@@ -44,6 +42,17 @@ export const formatBytes = (bytes: number): string => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
+export const formatValue = (val: number, format: string): string => {
+  switch (format) {
+    case "bytes":
+      return formatBytes(val);
+    case "number":
+      return val.toFixed(2);
+    default:
+      return `${val.toFixed(2)}%`;
+  }
+};
+
 const calculateStep = (timeScale: number): number => {
   // For ranges > 3 days, use larger steps to reduce data points
   if (timeScale > 259200) return 1800; // 30 min steps for > 3 days
@@ -55,7 +64,7 @@ const calculateStep = (timeScale: number): number => {
 const fetchPrometheusData = async (
   queries: string[],
   timeScale: number,
-  lastFetchTime?: number
+  lastFetchTime?: number,
 ) => {
   const now = Date.now();
   const endTime = Math.floor(now / 1000);
@@ -70,15 +79,15 @@ const fetchPrometheusData = async (
     queries.map((query) =>
       fetch(
         `https://metrics.pyro.host/api/v1/query_range?query=${encodeURIComponent(
-          query
-        )}&start=${startTime}&end=${endTime}&step=${step}`
+          query,
+        )}&start=${startTime}&end=${endTime}&step=${step}`,
       )
         .then((res) => res.json())
         .catch((err) => {
           console.error(`Error fetching data for query: ${query}`, err);
           return null;
-        })
-    )
+        }),
+    ),
   );
   return responses;
 };
@@ -112,7 +121,7 @@ const processMetricData = (response: PrometheusResponse): Metric[] => {
 export const fetchNodeMetrics = async (
   instance: string,
   timeScale: number,
-  lastFetchTime?: number
+  lastFetchTime?: number,
 ): Promise<Metrics> => {
   try {
     const queries = {
@@ -134,7 +143,7 @@ export const fetchNodeMetrics = async (
     const queryRangeResponses = await fetchPrometheusData(
       Object.values(queries),
       timeScale,
-      lastFetchTime
+      lastFetchTime,
     );
     const [
       cpuResponse,
@@ -200,10 +209,10 @@ export const fetchNodeMetrics = async (
             ([time, value]: [number, string]): Metric => ({
               timestamp: new Date(time * 1000),
               value: parseFloat(parseFloat(value).toFixed(2)),
-            })
+            }),
           );
           cpuPerCoreData[core] = metrics;
-        }
+        },
       );
     }
 
@@ -217,16 +226,16 @@ export const fetchNodeMetrics = async (
       Object.values(uptimeQueries).map((query) =>
         fetch(
           `https://metrics.pyro.host/api/v1/query?query=${encodeURIComponent(
-            query
-          )}`
-        ).then((res) => res.json())
-      )
+            query,
+          )}`,
+        ).then((res) => res.json()),
+      ),
     );
     const currentTime = parseFloat(
-      uptimeResponses[0]?.data?.result[0]?.value[1] || "0"
+      uptimeResponses[0]?.data?.result[0]?.value[1] || "0",
     );
     const bootTime = parseFloat(
-      uptimeResponses[1]?.data?.result[0]?.value[1] || "0"
+      uptimeResponses[1]?.data?.result[0]?.value[1] || "0",
     );
     const uptime = currentTime - bootTime;
 
@@ -251,26 +260,26 @@ export const fetchNodeMetrics = async (
 export const fetchMultipleNodeMetrics = async (
   instances: string[],
   timeScale: number,
-  lastFetchTime?: number
+  lastFetchTime?: number,
 ): Promise<{ [instance: string]: Metrics }> => {
   const results = await Promise.all(
     instances.map(async (instance) => {
       const metrics = await fetchNodeMetrics(
         instance,
         timeScale,
-        lastFetchTime
+        lastFetchTime,
       );
       return { instance, metrics };
-    })
+    }),
   );
   return Object.fromEntries(
-    results.map(({ instance, metrics }) => [instance, metrics])
+    results.map(({ instance, metrics }) => [instance, metrics]),
   );
 };
 
 export const fetchClusterAverages = async (
   timeScale: number,
-  lastFetchTime?: number
+  lastFetchTime?: number,
 ): Promise<ClusterAverages> => {
   const queries = {
     cpu: `avg(100 - (rate(node_cpu_seconds_total{mode="idle"}[5m]) * 100))`,
@@ -284,7 +293,7 @@ export const fetchClusterAverages = async (
   const responses = await fetchPrometheusData(
     Object.values(queries),
     timeScale,
-    lastFetchTime
+    lastFetchTime,
   );
 
   return {
@@ -299,7 +308,7 @@ export const fetchClusterAverages = async (
 
 export const fetchBasicMetrics = async (
   instance: string,
-  timeScale: number
+  timeScale: number,
 ): Promise<Pick<Metrics, "cpu" | "memory" | "disk">> => {
   const queries = {
     cpu: `100 - (avg by (instance) (rate(node_cpu_seconds_total{instance="${instance}",mode="idle"}[5m])) * 100)`,
@@ -309,7 +318,7 @@ export const fetchBasicMetrics = async (
 
   const responses = await fetchPrometheusData(
     Object.values(queries),
-    timeScale
+    timeScale,
   );
 
   return {
@@ -322,6 +331,7 @@ export const fetchBasicMetrics = async (
 export const fetchNodeDetails = async (instance: string) => {
   try {
     const queries = {
+      cpuModel: `node_cpu_info{instance="${instance}"}`,
       cpuCores: `count(node_cpu_seconds_total{instance="${instance}",mode="idle"})`,
       totalMemory: `node_memory_MemTotal_bytes{instance="${instance}"}`,
     };
@@ -330,29 +340,32 @@ export const fetchNodeDetails = async (instance: string) => {
       Object.entries(queries).map(([key, query]) =>
         fetch(
           `https://metrics.pyro.host/api/v1/query?query=${encodeURIComponent(
-            query
-          )}`
+            query,
+          )}`,
         )
           .then((res) => res.json())
           .then((data) => ({ key, data }))
           .catch((err) => {
             console.error(`Error fetching ${key} for ${instance}:`, err);
             return { key, data: null };
-          })
-      )
+          }),
+      ),
     );
 
     const details = {
+      cpuModel: "",
       cpuCores: 0,
       totalMemory: 0,
     };
 
     responses.forEach(({ key, data }) => {
-      if (data?.data?.result?.[0]?.value?.[1]) {
+      if (data?.data?.result?.[0]) {
         if (key === "cpuCores") {
           details.cpuCores = parseInt(data.data.result[0].value[1]);
         } else if (key === "totalMemory") {
           details.totalMemory = parseInt(data.data.result[0].value[1]);
+        } else if (key === "cpuModel") {
+          details.cpuModel = data.data.result[0].metric.model_name;
         }
       }
     });
@@ -363,13 +376,14 @@ export const fetchNodeDetails = async (instance: string) => {
     return {
       cpuCores: 0,
       totalMemory: 0,
+      cpuModel: "",
     };
   }
 };
 
 export const fetchNodeName = async (instance: string) => {
   const response = await fetch(
-    `https://metrics.pyro.host/api/v1/query?query=node_uname_info{instance="${instance}"}`
+    `https://metrics.pyro.host/api/v1/query?query=node_uname_info{instance="${instance}"}`,
   );
   const data = await response.json();
   return data.data.result[0]?.metric.nodename || instance;

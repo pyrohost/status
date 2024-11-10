@@ -14,7 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import CustomTooltip from "./CustomTooltip";
-import { formatBytes, formatTimestamp } from "@/lib/utils";
+import { formatBytes, formatTimestamp, formatValue } from "@/lib/utils";
 import { Metric, MemoryDetails, SwapDetails } from "@/lib/types";
 
 interface MetricChartProps {
@@ -220,9 +220,7 @@ const MetricChart: React.FC<MetricChartProps> = ({
                 stroke="rgba(255,255,255,0.3)"
                 tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 12 }}
                 axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
-                tickFormatter={(value) =>
-                  format === "percent" ? `${value}%` : formatBytes(value)
-                }
+                tickFormatter={(value) => formatValue(value, format)}
                 domain={format === "percent" ? [0, 100] : undefined}
               />
               <RechartsTooltip

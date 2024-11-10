@@ -9,7 +9,7 @@ import {
   Tooltip as RechartsTooltip,
 } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatBytes, formatTimestamp } from "@/lib/utils";
+import { formatBytes, formatTimestamp, formatValue } from "@/lib/utils";
 import { MetricCardData } from "@/lib/types";
 import CustomTooltip from "./CustomTooltip";
 
@@ -44,24 +44,15 @@ const MetricCard: React.FC<MetricCardProps> = ({
     );
   }
 
-  const formatValue = (val: number) => {
-    switch (format) {
-      case "bytes":
-        return formatBytes(val);
-      case "number":
-        return val.toFixed(2);
-      default:
-        return `${val.toFixed(2)}%`;
-    }
-  };
-
   return (
     <div className="border border-white/10 bg-black/30 p-4 transition-colors hover:border-white/20">
       <h3 className="text-sm font-medium text-white/60 flex items-center space-x-2">
         {icon}
         <span>{title}</span>
       </h3>
-      <p className="text-3xl font-bold mt-1 text-white">{formatValue(value)}</p>
+      <p className="text-3xl font-bold mt-1 text-white">
+        {formatValue(value, format)}
+      </p>
       <div className="h-[100px] text-xs mt-4">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data}>

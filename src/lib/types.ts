@@ -21,6 +21,7 @@ export interface SwapDetails {
 
 export interface NodeDetails {
   details: {
+    cpuModel?: string;
     cpuCores: number;
     totalMemory: number;
   };
@@ -47,6 +48,7 @@ export interface Node {
   uptime?: number;
   lastUptimeFetch?: number;
   details?: {
+    cpuModel: string;
     cpuCores: number;
     totalMemory: number;
   };
@@ -54,6 +56,7 @@ export interface Node {
 
 export interface MergedNode extends Node {
   details: {
+    cpuModel: string;
     cpuCores: number;
     totalMemory: number;
   };

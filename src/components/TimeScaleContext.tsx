@@ -11,7 +11,7 @@ interface TimeScaleContextType {
 }
 
 const TimeScaleContext = createContext<TimeScaleContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export function TimeScaleProvider({ children }: { children: React.ReactNode }) {
@@ -25,7 +25,7 @@ export function TimeScaleProvider({ children }: { children: React.ReactNode }) {
       isTimeScaleLoading,
       setIsTimeScaleLoading,
     }),
-    [timeScale, isTimeScaleLoading]
+    [timeScale, isTimeScaleLoading],
   );
 
   return (
