@@ -1,6 +1,6 @@
 import React from "react";
 import { TooltipProps } from "recharts";
-import { formatBytes } from "@/lib/utils";
+import { formatBytes, formatTimestamp } from "@/lib/utils";
 
 interface CustomTooltipProps extends TooltipProps<number, string> {
   format?: "percent" | "bytes" | "number";
@@ -25,7 +25,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({
   return (
     <div className="bg-black border border-white/10 p-3 shadow-lg">
       <p className="text-white/80 text-sm mb-1">
-        {new Date(label).toLocaleTimeString()}
+        {formatTimestamp(label)}
       </p>
       <p className="text-white font-medium text-base">
         {value !== undefined ? formattedValue : "N/A"}

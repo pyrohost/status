@@ -21,6 +21,17 @@ export const timeScales = {
   "1m": 2592000,
 };
 
+export const formatTimestamp = (timestamp: string) => {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const hours24 = 24 * 60 * 60 * 1000;
+
+  return diff > hours24
+    ? date.toLocaleDateString()
+    : date.toLocaleTimeString();
+};
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

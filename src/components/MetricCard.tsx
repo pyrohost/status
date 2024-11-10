@@ -9,7 +9,7 @@ import {
   Tooltip as RechartsTooltip,
 } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatBytes } from "@/lib/utils";
+import { formatBytes, formatTimestamp } from "@/lib/utils";
 import { MetricCardData } from "@/lib/types";
 import CustomTooltip from "./CustomTooltip";
 
@@ -71,7 +71,7 @@ const MetricCard: React.FC<MetricCardProps> = ({
             />
             <XAxis
               dataKey="timestamp"
-              tickFormatter={(time) => new Date(time).toLocaleTimeString()}
+              tickFormatter={formatTimestamp}
               stroke="rgba(255,255,255,0.3)"
             />
             <YAxis

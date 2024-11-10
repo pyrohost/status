@@ -14,7 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import CustomTooltip from "./CustomTooltip";
-import { formatBytes } from "@/lib/utils";
+import { formatBytes, formatTimestamp } from "@/lib/utils";
 import { Metric, MemoryDetails, SwapDetails } from "@/lib/types";
 
 interface MetricChartProps {
@@ -84,7 +84,7 @@ const MetricChart: React.FC<MetricChartProps> = ({
                 />
                 <XAxis
                   dataKey="timestamp"
-                  tickFormatter={(time) => new Date(time).toLocaleTimeString()}
+                  tickFormatter={formatTimestamp}
                   stroke="rgba(255,255,255,0.3)"
                 />
                 <YAxis
@@ -153,7 +153,7 @@ const MetricChart: React.FC<MetricChartProps> = ({
                 />
                 <XAxis
                   dataKey="timestamp"
-                  tickFormatter={(time) => new Date(time).toLocaleTimeString()}
+                  tickFormatter={formatTimestamp}
                   stroke="rgba(255,255,255,0.3)"
                 />
                 <YAxis
@@ -210,7 +210,7 @@ const MetricChart: React.FC<MetricChartProps> = ({
               />
               <XAxis
                 dataKey="timestamp"
-                tickFormatter={(time) => new Date(time).toLocaleTimeString()}
+                tickFormatter={formatTimestamp}
                 stroke="rgba(255,255,255,0.3)"
                 tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 12 }}
                 axisLine={{ stroke: "rgba(255,255,255,0.1)" }}
